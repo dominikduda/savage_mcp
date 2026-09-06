@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/dominikduda/savage_mcp/refs/heads/master/savage_mcp_logo.png" width="500" />
+
 # savage_mcp
 
 `savage_mcp` is a local Model Context Protocol (MCP) server that lets MCP-compatible AI clients ask [Savage Scraper](https://github.com/dominikduda/savage_scraper) to open and scrape whitelisted pages in your normal Chrome browser.
