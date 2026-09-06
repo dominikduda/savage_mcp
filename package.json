@@ -1,0 +1,24 @@
+{
+  "name": "savage_mcp",
+  "version": "0.1.0",
+  "description": "Local MCP bridge for Savage Scraper and Chrome.",
+  "type": "module",
+  "bin": {
+    "savage_mcp": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "init": "node src/init.js",
+    "check": "node --check src/index.js && node --check src/bridge.js && node --check src/config.js && node --check src/hosts.js && node --check src/init.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.0.0",
+    "ws": "^8.21.3",
+    "zod": "^4.5.4"
+  },
+  "license": "MIT"
+}

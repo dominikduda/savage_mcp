@@ -1,0 +1,10 @@
+{
+  "bridge_port": 8765,
+  "bridge_token": "replace-with-a-random-token-from-npm-run-init",
+  "allowed_hosts": [
+    "jira.example.com",
+    "github.com",
+    "*.internal.example.com"
+  ],
+  "agent_tab_close_seconds": 90
+}
