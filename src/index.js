@@ -34,11 +34,11 @@ function createServer() {
   const server = new McpServer(
     {
       name: 'savage_mcp',
-      version: '0.1.0'
+      version: '0.2.0'
     },
     {
       instructions:
-        'Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration.'
+        'Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration. The dedicated tab may close after a successful scrape when close_after_scrape is enabled.'
     }
   );
 
@@ -121,6 +121,7 @@ function createServer() {
           config_path: config.configPath,
           bridge_port: config.bridgePort,
           allowed_hosts: config.allowedHosts,
+          close_after_scrape: config.closeAfterScrape,
           agent_tab_close_seconds: config.agentTabCloseSeconds,
           bridge: localStatus,
           extension: extensionStatus

@@ -100,6 +100,7 @@ export class SavageBridge {
     const config = this.configReader();
     const payload = {
       allowedHosts: config.allowedHosts,
+      closeAfterScrape: config.closeAfterScrape,
       agentTabCloseSeconds: config.agentTabCloseSeconds
     };
     const serialized = JSON.stringify(payload);

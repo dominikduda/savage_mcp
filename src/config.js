@@ -6,6 +6,7 @@ import { normalizeHostPatterns } from './hosts.js';
 
 export const DEFAULT_BRIDGE_PORT = 8765;
 export const DEFAULT_AGENT_TAB_CLOSE_SECONDS = 90;
+export const DEFAULT_CLOSE_AFTER_SCRAPE = false;
 
 export function getConfigPath() {
   if (process.env.SAVAGE_MCP_CONFIG) {
@@ -27,6 +28,14 @@ function requireInteger(value, name, min, max) {
   }
 
   return numeric;
+}
+
+function requireBoolean(value, name) {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${name} must be a boolean.`);
+  }
+
+  return value;
 }
 
 export function readConfig() {
@@ -62,6 +71,10 @@ export function readConfig() {
     ),
     bridgeToken,
     allowedHosts: normalizeHostPatterns(parsed.allowed_hosts ?? []),
+    closeAfterScrape: requireBoolean(
+      parsed.close_after_scrape ?? DEFAULT_CLOSE_AFTER_SCRAPE,
+      'close_after_scrape'
+    ),
     agentTabCloseSeconds: requireInteger(
       parsed.agent_tab_close_seconds ?? DEFAULT_AGENT_TAB_CLOSE_SECONDS,
       'agent_tab_close_seconds',

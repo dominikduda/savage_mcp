@@ -30,7 +30,7 @@ The bridge token is a shared secret configured on both sides. The token is never
   "type": "hello",
   "clientNonce": "...",
   "extensionId": "...",
-  "extensionVersion": "1.1.0"
+  "extensionVersion": "1.2.0"
 }
 ```
 
@@ -72,11 +72,14 @@ Server → extension:
 {
   "type": "config",
   "allowedHosts": ["jira.example.com", "*.internal.example.com"],
+  "closeAfterScrape": false,
   "agentTabCloseSeconds": 90
 }
 ```
 
 Savage Scraper replaces its in-memory MCP whitelist with this list. The whitelist is also enforced by `savage_mcp` before an `open` request is sent.
+
+When `closeAfterScrape` is `true`, Savage Scraper closes its dedicated MCP tab after a successful `open` or `scrape` result has been captured. When it is `false` (the default), the tab remains reusable until `agentTabCloseSeconds` expires. The inactivity timeout also remains a fallback when an operation fails.
 
 ## Requests
 

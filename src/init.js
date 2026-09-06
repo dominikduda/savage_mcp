@@ -5,6 +5,7 @@ import path from 'node:path';
 
 import {
   DEFAULT_AGENT_TAB_CLOSE_SECONDS,
+  DEFAULT_CLOSE_AFTER_SCRAPE,
   DEFAULT_BRIDGE_PORT,
   getConfigPath
 } from './config.js';
@@ -23,6 +24,7 @@ const config = {
   bridge_port: DEFAULT_BRIDGE_PORT,
   bridge_token: crypto.randomBytes(32).toString('hex'),
   allowed_hosts: [],
+  close_after_scrape: DEFAULT_CLOSE_AFTER_SCRAPE,
   agent_tab_close_seconds: DEFAULT_AGENT_TAB_CLOSE_SECONDS
 };
 

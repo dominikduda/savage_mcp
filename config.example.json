@@ -6,5 +6,6 @@
     "github.com",
     "*.internal.example.com"
   ],
+  "close_after_scrape": false,
   "agent_tab_close_seconds": 90
 }

@@ -64,6 +64,7 @@ The generated configuration contains a random bridge token and an empty whitelis
   "bridge_port": 8765,
   "bridge_token": "<random 64-character token>",
   "allowed_hosts": [],
+  "close_after_scrape": false,
   "agent_tab_close_seconds": 90
 }
 ```
@@ -108,9 +109,15 @@ permits subdomains such as `one.internal.example.com` and `deep.one.internal.exa
 
 Global wildcard patterns are deliberately rejected.
 
-### Agent-tab close timeout
+### Agent-tab closing
 
-`agent_tab_close_seconds` controls how long the dedicated Savage MCP tab may remain idle before Savage Scraper closes it. The allowed range is 30–3600 seconds; the default is 90.
+`close_after_scrape` controls whether Savage Scraper closes the dedicated MCP tab immediately after a successful `savage_open` or `savage_scrape` operation. The result is captured before the tab is closed. The default is `false`, which preserves the reusable-tab behavior.
+
+```json
+"close_after_scrape": false
+```
+
+`agent_tab_close_seconds` controls the inactivity fallback. When `close_after_scrape` is `false`, it closes the reusable tab after that idle period. When `close_after_scrape` is `true`, it still acts as a safety fallback if a scrape fails before the immediate-close path completes. The allowed range remains 30–3600 seconds; the default is 90.
 
 ## Configure Savage Scraper
 
@@ -183,7 +190,7 @@ No OpenCode-specific protocol is used.
 
 ## Config reload behavior
 
-`allowed_hosts` and `agent_tab_close_seconds` are re-read and synchronized before tool requests, so changes do not require source-code changes and normally do not require restarting the MCP process.
+`allowed_hosts`, `close_after_scrape` and `agent_tab_close_seconds` are re-read and synchronized before tool requests, so changes do not require source-code changes and normally do not require restarting the MCP process.
 
 Changing `bridge_port` or `bridge_token` requires updating Savage Scraper's MCP options too. Restart `savage_mcp` after changing the port. A token change also requires the extension to reconnect with the matching token.
 
@@ -194,7 +201,8 @@ Savage Scraper owns exactly one dedicated MCP tab:
 - `savage_open` creates it if necessary.
 - Later `savage_open` calls navigate/reuse the same tab.
 - The user's previously active Chrome tab is restored after the operation when possible.
-- The MCP tab closes automatically after the configured inactivity timeout.
+- By default (`close_after_scrape: false`), the MCP tab closes after the configured inactivity timeout.
+- With `close_after_scrape: true`, the MCP tab closes immediately after each successful scrape; a later `savage_open` creates it again as needed.
 - Only HTTP/HTTPS URLs whose hostname matches `allowed_hosts` can be opened or scraped.
 
 Before each MCP scrape, Savage Scraper performs a deliberately simple lazy-load pass on the **main page scroll only**: it remembers the initial scroll position, walks down the page while content/page height can still grow, walks back upward, restores the original position, then runs the normal Savage Scraper extraction. This is intended to trigger common lazy loading; it is not a universal virtualized-content crawler.
