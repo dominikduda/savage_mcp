@@ -38,7 +38,7 @@ function createServer() {
     },
     {
       instructions:
-        'Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration. The dedicated tab may close after a successful scrape when close_after_scrape is enabled.'
+        'Savage MCP is intended for allowlisted page reading through the user\'s existing Chrome profile and authenticated browser session. Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab, including pages whose useful content depends on existing browser login/session state. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration. Savage MCP does not expose general click, type, form-submit, or arbitrary-JavaScript browser controls. The dedicated tab may close after a successful scrape when close_after_scrape is enabled.'
     }
   );
 
@@ -47,7 +47,7 @@ function createServer() {
     {
       title: 'Open and scrape URL',
       description:
-        'Open an allowed http/https URL in Savage Scraper\'s dedicated reusable Chrome tab, perform the configured lazy-load scroll pass, and return Savage Scraper HTML.',
+        'Read an allowed http/https URL through the user\'s existing Chrome profile and authenticated browser session. Opens or reuses Savage Scraper\'s dedicated Chrome tab, performs the configured lazy-load scroll pass, and returns the full Savage Scraper output string, including page metadata and simplified HTML.',
       inputSchema: z.object({
         url: z.string().url().describe('Absolute http:// or https:// URL on an allowed host.')
       }),

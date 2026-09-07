@@ -2,40 +2,81 @@
 
 # savage_mcp
 
-`savage_mcp` is a local Model Context Protocol (MCP) server that lets MCP-compatible AI clients ask [Savage Scraper](https://github.com/dominikduda/savage_scraper) to open and scrape whitelisted pages in your normal Chrome browser.
+`savage_mcp` is a **least-privilege browser-reading MCP** for [Savage Scraper](https://github.com/dominikduda/savage_scraper). It lets an MCP client open and scrape explicitly allowlisted pages through the Chrome profile you already use.
 
-It is **not OpenCode-specific**. It uses the standard local MCP stdio transport, so any MCP host that can launch a local stdio server can use it. OpenCode configuration is included below because that is the primary intended setup.
+It uses standard local MCP stdio transport and can be launched by any MCP host that supports local stdio servers.
+
+## Why this exists
+
+Many browser MCPs are automation tools: they can click, type, submit forms, execute scripts and operate applications. That is useful when you want an agent to control a browser.
+
+`savage_mcp` is for a different job:
+
+> **Let the AI read selected websites from your existing logged-in Chrome session without also giving it a general browser-control API.**
+
+### Your real browser and your existing session
+
+Savage Scraper runs in your normal Chrome profile. When `savage_mcp` opens an allowlisted site, that page uses the browser session you already have, including existing authentication and application state.
+
+There is no separate headless browser to maintain, no automation profile whose cookies need to be kept in sync, and no separate machine just to reproduce access you already have in Chrome.
+
+Chrome remains a normal human browser at the same time. Savage MCP owns one dedicated agent tab for its operations; your other tabs remain yours, and Savage Scraper restores the previously active tab when possible.
+
+### A small API on purpose
+
+The MCP tool surface is intentionally limited:
+
+- `savage_open(url)` — validate the URL against `allowed_hosts`, open or reuse the dedicated Chrome tab, perform the bounded lazy-load pass and return simplified HTML.
+- `savage_scrape()` — re-scrape the existing dedicated Savage MCP tab.
+- `savage_status()` — report bridge/config/extension status.
+
+There are intentionally no tools for:
+
+- clicking elements;
+- typing into pages;
+- submitting forms;
+- arbitrary JavaScript execution; or
+- unrestricted browser control.
+
+That is a feature, not an unfinished automation API. If you only need the model to **read** Jira, GitHub, documentation, dashboards, internal tools or other authenticated sites, giving it fewer browser capabilities reduces the accidental write/action surface.
+
+It is not a guarantee that opening a page can never have side effects; websites can implement their own behavior on page load. The design simply avoids exposing general mutation primitives to the MCP client.
+
+If your task requires an agent to operate websites, complete workflows, fill forms or debug the browser, use a full browser-automation tool instead.
+
+### Explicit site boundary
+
+`allowed_hosts` defines which HTTP/HTTPS hosts the MCP may open. The allowlist is enforced by both `savage_mcp` and Savage Scraper after the local bridge is authenticated.
+
+This gives the setup a deliberately simple trust model:
+
+```text
+existing Chrome session
++ explicit allowed_hosts
++ read-oriented MCP tools
+= browser context for the model
+```
 
 ## Architecture
 
 ```text
-MCP host (OpenCode, etc.)
-        |
-        | MCP over stdio
-        v
-    savage_mcp
-        |
-        | authenticated WebSocket
-        | ws://127.0.0.1:<port>
-        v
-  Savage Scraper
-  Chrome extension
-        |
-        v
- normal Chrome
+MCP host
+    |
+    | MCP over stdio
+    v
+savage_mcp
+    |
+    | authenticated WebSocket
+    | ws://127.0.0.1:<port>
+    v
+Savage Scraper
+Chrome extension
+    |
+    v
+normal Chrome profile
 ```
 
 The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used for mutual authentication between `savage_mcp` and the extension. Ordinary web pages are rejected by the bridge's Chrome-extension origin check.
-
-## What it can do
-
-The initial tool surface is intentionally small:
-
-- `savage_open(url)` — validates the URL against `allowed_hosts`, opens or reuses one dedicated Savage MCP Chrome tab, lets Savage Scraper perform its main-page lazy-load scroll pass, and returns the simplified HTML string.
-- `savage_scrape()` — re-scrapes the existing dedicated Savage MCP tab.
-- `savage_status()` — reports bridge/config/extension status.
-
-It does **not** expose arbitrary JavaScript execution, generic clicking, typing, or unrestricted browser control.
 
 ## Requirements
 
@@ -141,54 +182,21 @@ npm start
 
 The process speaks MCP on stdout/stdin. Diagnostic logs go to stderr because stdout is reserved for the MCP protocol.
 
-## OpenCode
+## MCP host configuration
 
-Current OpenCode V2 configuration places local servers under `mcp.servers`.
-
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "mcp": {
-    "servers": {
-      "savage_mcp": {
-        "type": "local",
-        "command": [
-          "node",
-          "/absolute/path/to/savage_mcp/src/index.js"
-        ]
-      }
-    }
-  }
-}
-```
-
-If you keep the config somewhere other than the default path:
-
-```jsonc
-{
-  "mcp": {
-    "servers": {
-      "savage_mcp": {
-        "type": "local",
-        "command": ["node", "/absolute/path/to/savage_mcp/src/index.js"],
-        "environment": {
-          "SAVAGE_MCP_CONFIG": "/absolute/path/to/config.json"
-        }
-      }
-    }
-  }
-}
-```
-
-## Other MCP clients
-
-`savage_mcp` is a generic local stdio MCP server. Configure another MCP host to execute:
+Configure your MCP host to launch `savage_mcp` as a local stdio process:
 
 ```bash
 node /absolute/path/to/savage_mcp/src/index.js
 ```
 
-No OpenCode-specific protocol is used.
+The process uses stdin/stdout for MCP. If your configuration file is somewhere other than the default location, set:
+
+```text
+SAVAGE_MCP_CONFIG=/absolute/path/to/config.json
+```
+
+Use your MCP host's normal local-server configuration to supply that command and optional environment variable.
 
 ## Config reload behavior
 
