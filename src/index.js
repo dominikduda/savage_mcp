@@ -8,6 +8,13 @@ import { readConfig } from './config.js';
 import { assertAllowedUrl } from './hosts.js';
 
 const bridge = new SavageBridge(readConfig);
+let agentOperationQueue = Promise.resolve();
+
+function enqueueAgentOperation(operation) {
+  const result = agentOperationQueue.then(operation, operation);
+  agentOperationQueue = result.catch(() => {});
+  return result;
+}
 
 try {
   bridge.start();
@@ -34,7 +41,7 @@ function createServer() {
   const server = new McpServer(
     {
       name: 'savage_mcp',
-      version: '0.2.0'
+      version: '0.2.1'
     },
     {
       instructions:
@@ -57,7 +64,7 @@ function createServer() {
         idempotentHint: false
       }
     },
-    async ({ url }) => {
+    async ({ url }) => enqueueAgentOperation(async () => {
       try {
         const config = readConfig();
         const parsedUrl = assertAllowedUrl(url, config.allowedHosts);
@@ -66,7 +73,7 @@ function createServer() {
       } catch (error) {
         return errorResult(error);
       }
-    }
+    })
   );
 
   server.registerTool(
@@ -81,14 +88,14 @@ function createServer() {
         idempotentHint: false
       }
     },
-    async () => {
+    async () => enqueueAgentOperation(async () => {
       try {
         const result = await bridge.request('scrape');
         return textResult(result.content);
       } catch (error) {
         return errorResult(error);
       }
-    }
+    })
   );
 
   server.registerTool(

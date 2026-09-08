@@ -210,12 +210,14 @@ Savage Scraper owns exactly one dedicated MCP tab:
 
 - `savage_open` creates it if necessary.
 - Later `savage_open` calls navigate/reuse the same tab.
+- Concurrent `savage_open` / `savage_scrape` tool calls are serialized in `savage_mcp` before they are sent across the bridge, so their individual bridge timeouts start only when each browser operation actually begins.
+- Savage Scraper also serializes browser operations on the extension side as a second correctness boundary around the shared tab.
 - The user's previously active Chrome tab is restored after the operation when possible.
 - By default (`close_after_scrape: false`), the MCP tab closes after the configured inactivity timeout.
 - With `close_after_scrape: true`, the MCP tab closes immediately after each successful scrape; a later `savage_open` creates it again as needed.
 - Only HTTP/HTTPS URLs whose hostname matches `allowed_hosts` can be opened or scraped.
 
-Before each MCP scrape, Savage Scraper performs a deliberately simple lazy-load pass on the **main page scroll only**: it remembers the initial scroll position, walks down the page while content/page height can still grow, walks back upward, restores the original position, then runs the normal Savage Scraper extraction. This is intended to trigger common lazy loading; it is not a universal virtualized-content crawler.
+Before each MCP scrape, Savage Scraper performs a bounded lazy-load pass on the **main page scroll only** using larger downward steps, then jumps directly back to the original position before extraction. The extension pins scripting work to Chrome's current main-document ID; transient main-document replacement is retried up to 3 times within a 60-second operation/retry budget. This is intended to handle ordinary redirects/reloads/document swaps without allowing infinite retries, and it is not a universal virtualized-content crawler.
 
 ## Security notes
 
