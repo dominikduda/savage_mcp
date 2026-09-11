@@ -2,7 +2,7 @@
 
 # savage_mcp
 
-`savage_mcp` is a **least-privilege browser-reading MCP** for [Savage Scraper](https://github.com/dominikduda/savage_scraper). It lets an MCP client open and scrape explicitly allowlisted pages through the Chrome profile you already use.
+Savage MCP is a **least-privilege browser-reading MCP** for [Savage Scraper](https://github.com/dominikduda/savage_scraper). It lets an MCP client open and scrape explicitly allowlisted pages through the Chrome profile you already use.
 
 It uses standard local MCP stdio transport and can be launched by any MCP host that supports local stdio servers.
 
@@ -10,13 +10,13 @@ It uses standard local MCP stdio transport and can be launched by any MCP host t
 
 Many browser MCPs are automation tools: they can click, type, submit forms, execute scripts and operate applications. That is useful when you want an agent to control a browser.
 
-`savage_mcp` is for a different job:
+Savage MCP is for a different job:
 
 > **Let the AI read selected websites from your existing logged-in Chrome session without also giving it a general browser-control API.**
 
 ### Your real browser and your existing session
 
-Savage Scraper runs in your normal Chrome profile. When `savage_mcp` opens an allowlisted site, that page uses the browser session you already have, including existing authentication and application state.
+Savage Scraper runs in your normal Chrome profile. When Savage MCP opens an allowlisted site, that page uses the browser session you already have, including existing authentication and application state.
 
 There is no separate headless browser to maintain, no automation profile whose cookies need to be kept in sync, and no separate machine just to reproduce access you already have in Chrome.
 
@@ -46,7 +46,7 @@ If your task requires an agent to operate websites, complete workflows, fill for
 
 ### Explicit site boundary
 
-`allowed_hosts` defines which HTTP/HTTPS hosts the MCP may open. Optional `allowed_paths` rules can narrow an allowed host to specific URL paths. The combined policy is enforced by both `savage_mcp` and Savage Scraper after the local bridge is authenticated.
+`allowed_hosts` defines which HTTP/HTTPS hosts the MCP may open. Optional `allowed_paths` rules can narrow an allowed host to specific URL paths. The combined policy is enforced by both Savage MCP and Savage Scraper after the local bridge is authenticated.
 
 This gives the setup a deliberately simple trust model:
 
@@ -65,7 +65,7 @@ MCP host
     |
     | MCP over stdio
     v
-savage_mcp
+Savage MCP
     |
     | authenticated WebSocket
     | ws://127.0.0.1:<port>
@@ -77,7 +77,7 @@ Chrome extension
 normal Chrome profile
 ```
 
-The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used for mutual authentication between `savage_mcp` and the extension. Ordinary web pages are rejected by the bridge's Chrome-extension origin check.
+The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used for mutual authentication between Savage MCP and the extension. Ordinary web pages are rejected by the bridge's Chrome-extension origin check.
 
 ## Requirements
 
