@@ -2,7 +2,7 @@
 
 # savage_mcp
 
-Savage MCP is a **least-privilege browser-reading MCP** for [Savage Scraper](https://github.com/dominikduda/savage_scraper). It lets an MCP client open and scrape explicitly allowlisted pages through the Chrome profile you already use.
+Savage MCP is a **least-privilege browser-reading MCP** for [Savage Scraper](https://chromewebstore.google.com/detail/savage-scraper/ejoijhjpdojdcnjppegojmkenidhblog). It lets an MCP client open and scrape explicitly allowlisted pages through the Chrome profile you already use.
 
 It uses standard local MCP stdio transport and can be launched by any MCP host that supports local stdio servers.
 
@@ -84,7 +84,7 @@ The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used fo
 - macOS, Linux, or another platform where Node.js and Chrome run on the same host
 - Node.js 20 or newer
 - Google Chrome
-- Savage Scraper with MCP support installed: <https://github.com/dominikduda/savage_scraper>
+- [Savage Scraper](https://chromewebstore.google.com/detail/savage-scraper/ejoijhjpdojdcnjppegojmkenidhblog) with MCP support installed
 
 ## Install
 
@@ -214,13 +214,12 @@ This allows the repository root and its descendants while rejecting other `githu
 
 ## Configure Savage Scraper
 
-1. Install/update [Savage Scraper](https://github.com/dominikduda/savage_scraper).
-2. Open `chrome://extensions`.
-3. Find **Savage Scraper** and open **Extension options**.
-4. Under **MCP integration**, paste the `bridge_token` from `~/.config/savage_mcp/config.json`.
-5. Set the same bridge port (default `8765`).
-6. Click **Enable MCP website access** and approve Chrome's optional HTTP/HTTPS site-access prompt.
-7. Save the settings.
+1. Install/update [Savage Scraper](https://chromewebstore.google.com/detail/savage-scraper/ejoijhjpdojdcnjppegojmkenidhblog).
+2. Find **Savage Scraper** and open **Extension options**.
+3. Under **MCP integration**, paste the `bridge_token` from `~/.config/savage_mcp/config.json`.
+4. Set the same bridge port (default `8765`).
+5. Click **Enable MCP website access** and approve Chrome's optional HTTP/HTTPS site-access prompt.
+6. Save the settings.
 
 The optional broad Chrome host permission makes autonomous operation possible. The actual operational restriction is the `allowed_hosts` list plus any configured `allowed_paths` rules in `savage_mcp`; the extension receives that policy only after mutual bridge authentication and enforces it again on the Chrome side.
 
@@ -234,7 +233,7 @@ The process speaks MCP on stdout/stdin. Diagnostic logs go to stderr because std
 
 ## MCP host configuration
 
-Configure your MCP host to launch `savage_mcp` as a local stdio process:
+Configure your MCP host to launch Savage MCP as a local stdio process:
 
 ```bash
 node /absolute/path/to/savage_mcp/src/index.js
