@@ -100,6 +100,7 @@ export class SavageBridge {
     const config = this.configReader();
     const payload = {
       allowedHosts: config.allowedHosts,
+      allowedPaths: config.allowedPaths,
       closeAfterScrape: config.closeAfterScrape,
       agentTabCloseSeconds: config.agentTabCloseSeconds
     };

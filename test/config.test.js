@@ -17,6 +17,7 @@ function withConfig(overrides, callback) {
       bridge_port: 8765,
       bridge_token: 'x'.repeat(64),
       allowed_hosts: [],
+      allowed_paths: {},
       agent_tab_close_seconds: 90,
       ...overrides
     }, null, 2)}\n`
@@ -54,6 +55,41 @@ test('close_after_scrape rejects non-boolean values', () => {
     assert.throws(
       () => readConfig(),
       /close_after_scrape must be a boolean/
+    );
+  });
+});
+
+
+test('allowed_paths defaults to an empty object', () => {
+  withConfig({}, () => {
+    assert.deepEqual(readConfig().allowedPaths, {});
+  });
+});
+
+test('allowed_paths is normalized against allowed_hosts', () => {
+  withConfig({
+    allowed_hosts: ['GITHUB.COM'],
+    allowed_paths: {
+      'github.com': ['/dominikduda/savage_scraper/**']
+    }
+  }, () => {
+    assert.deepEqual(readConfig().allowedHosts, ['github.com']);
+    assert.deepEqual(readConfig().allowedPaths, {
+      'github.com': ['/dominikduda/savage_scraper/**']
+    });
+  });
+});
+
+test('allowed_paths rejects keys that are not present in allowed_hosts', () => {
+  withConfig({
+    allowed_hosts: ['github.com'],
+    allowed_paths: {
+      'api.github.com': []
+    }
+  }, () => {
+    assert.throws(
+      () => readConfig(),
+      /allowed_paths key must also appear in allowed_hosts/
     );
   });
 });

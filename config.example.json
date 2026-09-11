@@ -6,6 +6,12 @@
     "github.com",
     "*.internal.example.com"
   ],
+  "allowed_paths": {
+    "github.com": [
+      "/dominikduda/savage_scraper/**"
+    ],
+    "*.internal.example.com": []
+  },
   "close_after_scrape": false,
   "agent_tab_close_seconds": 90
 }

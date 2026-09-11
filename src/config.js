@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { normalizeHostPatterns } from './hosts.js';
+import { normalizeAllowedPaths, normalizeHostPatterns } from './hosts.js';
 
 export const DEFAULT_BRIDGE_PORT = 8765;
 export const DEFAULT_AGENT_TAB_CLOSE_SECONDS = 90;
@@ -56,6 +56,8 @@ export function readConfig() {
   }
 
   const bridgeToken = String(parsed.bridge_token || '').trim();
+  const allowedHosts = normalizeHostPatterns(parsed.allowed_hosts ?? []);
+  const allowedPaths = normalizeAllowedPaths(parsed.allowed_paths ?? {}, allowedHosts);
 
   if (bridgeToken.length < 32) {
     throw new Error('bridge_token must contain at least 32 characters.');
@@ -70,7 +72,8 @@ export function readConfig() {
       65535
     ),
     bridgeToken,
-    allowedHosts: normalizeHostPatterns(parsed.allowed_hosts ?? []),
+    allowedHosts,
+    allowedPaths,
     closeAfterScrape: requireBoolean(
       parsed.close_after_scrape ?? DEFAULT_CLOSE_AFTER_SCRAPE,
       'close_after_scrape'

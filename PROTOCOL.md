@@ -30,7 +30,7 @@ The bridge token is a shared secret configured on both sides. The token is never
   "type": "hello",
   "clientNonce": "...",
   "extensionId": "...",
-  "extensionVersion": "1.2.0"
+  "extensionVersion": "1.2.1"
 }
 ```
 
@@ -71,13 +71,14 @@ Server → extension:
 ```json
 {
   "type": "config",
-  "allowedHosts": ["jira.example.com", "*.internal.example.com"],
+  "allowedHosts": ["jira.example.com", "github.com", "*.internal.example.com"],
+  "allowedPaths": {"github.com": ["/dominikduda/savage_scraper/**"], "*.internal.example.com": []},
   "closeAfterScrape": false,
   "agentTabCloseSeconds": 90
 }
 ```
 
-Savage Scraper replaces its in-memory MCP whitelist with this list. The whitelist is also enforced by `savage_mcp` before an `open` request is sent.
+Savage Scraper replaces its in-memory host/path policy with these values. `allowedHosts` is the outer gate. `allowedPaths` optionally narrows a matching host pattern: a missing key or an empty array means all paths on that already-allowed host, while a non-empty array allows only matching exact paths or trailing `/**` recursive prefixes. The most specific matching host pattern controls the path policy. The same policy is enforced by `savage_mcp` before an `open` request is sent and by Savage Scraper before opening or scraping the agent tab.
 
 When `closeAfterScrape` is `true`, Savage Scraper closes its dedicated MCP tab after a successful `open` or `scrape` result has been captured. When it is `false` (the default), the tab remains reusable until `agentTabCloseSeconds` expires. The inactivity timeout also remains a fallback when an operation fails.
 

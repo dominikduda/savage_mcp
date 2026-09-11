@@ -45,7 +45,7 @@ function createServer() {
     },
     {
       instructions:
-        'Savage MCP is intended for allowlisted page reading through the user\'s existing Chrome profile and authenticated browser session. Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab, including pages whose useful content depends on existing browser login/session state. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration. Savage MCP does not expose general click, type, form-submit, or arbitrary-JavaScript browser controls. The dedicated tab may close after a successful scrape when close_after_scrape is enabled.'
+        'Savage MCP is intended for allowlisted page reading through the user\'s existing Chrome profile and authenticated browser session. Use savage_open to open and scrape an allowed URL in the dedicated Savage Scraper Chrome tab, including pages whose useful content depends on existing browser login/session state. Use savage_scrape to re-scrape that tab. URLs are restricted by the local savage_mcp allowed_hosts configuration and optional allowed_paths rules. Savage MCP does not expose general click, type, form-submit, or arbitrary-JavaScript browser controls. The dedicated tab may close after a successful scrape when close_after_scrape is enabled.'
     }
   );
 
@@ -56,7 +56,7 @@ function createServer() {
       description:
         'Read an allowed http/https URL through the user\'s existing Chrome profile and authenticated browser session. Opens or reuses Savage Scraper\'s dedicated Chrome tab, performs the configured lazy-load scroll pass, and returns the full Savage Scraper output string, including page metadata and simplified HTML.',
       inputSchema: z.object({
-        url: z.string().url().describe('Absolute http:// or https:// URL on an allowed host.')
+        url: z.string().url().describe('Absolute http:// or https:// URL permitted by allowed_hosts and allowed_paths.')
       }),
       annotations: {
         readOnlyHint: false,
@@ -67,7 +67,7 @@ function createServer() {
     async ({ url }) => enqueueAgentOperation(async () => {
       try {
         const config = readConfig();
-        const parsedUrl = assertAllowedUrl(url, config.allowedHosts);
+        const parsedUrl = assertAllowedUrl(url, config.allowedHosts, config.allowedPaths);
         const result = await bridge.request('open', { url: parsedUrl.href });
         return textResult(result.content);
       } catch (error) {
@@ -103,7 +103,7 @@ function createServer() {
     {
       title: 'Savage MCP status',
       description:
-        'Show local bridge connection state, configured allowed hosts, config path, and Savage Scraper agent-tab state.',
+        'Show local bridge connection state, configured allowed hosts/path restrictions, config path, and Savage Scraper agent-tab state.',
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
@@ -128,6 +128,7 @@ function createServer() {
           config_path: config.configPath,
           bridge_port: config.bridgePort,
           allowed_hosts: config.allowedHosts,
+          allowed_paths: config.allowedPaths,
           close_after_scrape: config.closeAfterScrape,
           agent_tab_close_seconds: config.agentTabCloseSeconds,
           bridge: localStatus,

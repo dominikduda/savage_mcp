@@ -24,6 +24,7 @@ const config = {
   bridge_port: DEFAULT_BRIDGE_PORT,
   bridge_token: crypto.randomBytes(32).toString('hex'),
   allowed_hosts: [],
+  allowed_paths: {},
   close_after_scrape: DEFAULT_CLOSE_AFTER_SCRAPE,
   agent_tab_close_seconds: DEFAULT_AGENT_TAB_CLOSE_SECONDS
 };
@@ -34,4 +35,4 @@ fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`, {
 });
 
 console.error(`Created ${configPath}`);
-console.error('Next: add allowed_hosts, then copy bridge_token into Savage Scraper > Options > MCP integration.');
+console.error('Next: add allowed_hosts (and optional allowed_paths), then copy bridge_token into Savage Scraper > Options > MCP integration.');
