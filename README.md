@@ -79,6 +79,16 @@ normal Chrome profile
 
 The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used for mutual authentication between Savage MCP and the extension. Ordinary web pages are rejected by the bridge's Chrome-extension origin check.
 
+### Multiple MCP processes
+
+MCP hosts may start more than one Savage MCP process at the same time—for example, separate OpenCode sessions or concurrent local jobs. Savage MCP processes that resolve to the same configuration file automatically share one browser bridge.
+
+One process is elected as the **bridge leader**. It owns the configured browser WebSocket port and the authenticated Savage Scraper connection. Additional Savage MCP processes act as **proxies** over local OS IPC and forward browser/status requests to that leader. Requests from all participating processes are serialized by the leader before they reach Chrome, so multiple MCP clients do not compete for the single dedicated browser tab.
+
+If the leader exits, a proxy can take over leadership on a later request or status check. Savage Scraper's normal bridge reconnect behavior then connects to the new leader. `savage_status` reports the local process role (`leader` or `proxy`) and the active `leaderPid` alongside the browser connection state.
+
+The coordination group is keyed by the resolved Savage MCP configuration path. Processes using the same `~/.config/savage_mcp/config.json` (or the same explicit `SAVAGE_MCP_CONFIG`) share a bridge. Processes using different configuration files are independent and may therefore require different bridge ports.
+
 ## Requirements
 
 - macOS, Linux, or another platform where Node.js and Chrome run on the same host
@@ -272,11 +282,13 @@ For OpenCode, add a local MCP entry like this to `opencode.json` or `opencode.js
 
 If `savage_mcp` uses a non-default config path, add an `environment` object to the `savage` MCP entry with `SAVAGE_MCP_CONFIG` pointing to that file. The larger MCP timeout is useful for queued or slow browser reads.
 
+Multiple OpenCode processes can use this configuration simultaneously. OpenCode may launch separate local Savage MCP processes for different sessions or workspaces; those processes coordinate internally through the shared bridge described above. A singleton OpenCode server or custom attach wrapper is not required for Savage MCP multi-session use.
+
 ## Config reload behavior
 
 `allowed_hosts`, `allowed_paths`, `close_after_scrape` and `agent_tab_close_seconds` are re-read and synchronized before tool requests, so changes do not require source-code changes and normally do not require restarting the MCP process.
 
-Changing `bridge_port` or `bridge_token` requires updating Savage Scraper's MCP options too. Restart `savage_mcp` after changing the port. A token change also requires the extension to reconnect with the matching token.
+Changing `bridge_port` or `bridge_token` requires updating Savage Scraper's MCP options too. After changing the port, restart the currently running Savage MCP host processes so a newly elected leader binds the new port. A token change also requires the extension to reconnect with the matching token.
 
 ## Browser behavior
 
@@ -284,7 +296,7 @@ Savage Scraper owns exactly one dedicated MCP tab:
 
 - `savage_open` creates it if necessary.
 - Later `savage_open` calls navigate/reuse the same tab.
-- Concurrent `savage_open` / `savage_scrape` tool calls are serialized in `savage_mcp` before they are sent across the bridge, so their individual bridge timeouts start only when each browser operation actually begins.
+- Concurrent `savage_open` / `savage_scrape` calls—including calls from multiple Savage MCP processes sharing the same config—are serialized by the shared bridge leader before they reach Chrome.
 - Savage Scraper also serializes browser operations on the extension side as a second correctness boundary around the shared tab.
 - The user's previously active Chrome tab is restored after the operation when possible.
 - By default (`close_after_scrape: false`), the MCP tab closes after the configured inactivity timeout.
