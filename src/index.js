@@ -3,11 +3,11 @@ import { McpServer } from '@modelcontextprotocol/server';
 import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import * as z from 'zod/v4';
 
-import { SavageBridge } from './bridge.js';
+import { SharedSavageBridge } from './shared_bridge.js';
 import { readConfig } from './config.js';
 import { assertAllowedUrl } from './hosts.js';
 
-const bridge = new SavageBridge(readConfig);
+const bridge = new SharedSavageBridge(readConfig);
 let agentOperationQueue = Promise.resolve();
 
 function enqueueAgentOperation(operation) {
@@ -17,7 +17,7 @@ function enqueueAgentOperation(operation) {
 }
 
 try {
-  bridge.start();
+  await bridge.start();
 } catch (error) {
   console.error(`[savage_mcp] Could not start: ${error.message}`);
   process.exit(1);
@@ -113,7 +113,7 @@ function createServer() {
     async () => {
       try {
         const config = readConfig();
-        const localStatus = bridge.status();
+        const localStatus = await bridge.status();
         let extensionStatus = null;
 
         if (localStatus.connected) {

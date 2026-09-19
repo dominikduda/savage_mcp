@@ -38,10 +38,13 @@ export class SavageBridge {
     this.lastPushedConfig = '';
   }
 
-  start() {
-    const config = this.configReader();
+  async start() {
+    if (this.wss) {
+      return;
+    }
 
-    this.wss = new WebSocketServer({
+    const config = this.configReader();
+    const wss = new WebSocketServer({
       host: '127.0.0.1',
       port: config.bridgePort,
       perMessageDeflate: false,
@@ -49,17 +52,36 @@ export class SavageBridge {
       verifyClient: ({ origin }) => isExtensionOrigin(origin)
     });
 
-    this.wss.on('connection', (socket, request) => {
+    this.wss = wss;
+
+    wss.on('connection', (socket, request) => {
       this.#handleConnection(socket, request);
     });
 
-    this.wss.on('listening', () => {
-      console.error(`[savage_mcp] Chrome bridge listening on ws://127.0.0.1:${config.bridgePort}`);
-    });
+    try {
+      await new Promise((resolve, reject) => {
+        const onListening = () => {
+          wss.off('error', onError);
+          resolve();
+        };
+        const onError = error => {
+          wss.off('listening', onListening);
+          reject(error);
+        };
 
-    this.wss.on('error', error => {
+        wss.once('listening', onListening);
+        wss.once('error', onError);
+      });
+    } catch (error) {
+      this.wss = null;
+      throw error;
+    }
+
+    wss.on('error', error => {
       console.error(`[savage_mcp] WebSocket server error: ${error.message}`);
     });
+
+    console.error(`[savage_mcp] Chrome bridge listening on ws://127.0.0.1:${config.bridgePort}`);
   }
 
   async stop() {
