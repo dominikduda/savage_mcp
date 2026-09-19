@@ -26,9 +26,9 @@ Chrome remains a normal human browser at the same time. Savage MCP owns one dedi
 
 The MCP tool surface is intentionally limited:
 
-- `savage_open(url)` — validate the URL against `allowed_hosts` and optional `allowed_paths`, open or reuse the dedicated Chrome tab, perform the bounded lazy-load pass and return simplified HTML.
-- `savage_scrape()` — re-scrape the existing dedicated Savage MCP tab.
-- `savage_status()` — report bridge/config/extension status.
+- `savage_open(url)` - validate the URL against `allowed_hosts` and optional `allowed_paths`, open or reuse the dedicated Chrome tab, perform the bounded lazy-load pass and return simplified HTML.
+- `savage_scrape()` - re-scrape the existing dedicated Savage MCP tab.
+- `savage_status()` - report bridge/config/extension status.
 
 There are intentionally no tools for:
 
@@ -81,7 +81,7 @@ The WebSocket server binds only to `127.0.0.1`. A shared bridge token is used fo
 
 ### Multiple MCP processes
 
-MCP hosts may start more than one Savage MCP process at the same time—for example, separate OpenCode sessions or concurrent local jobs. Savage MCP processes that resolve to the same configuration file automatically share one browser bridge.
+MCP hosts may start more than one Savage MCP process at the same time-for example, separate OpenCode sessions or concurrent local jobs. Savage MCP processes that resolve to the same configuration file automatically share one browser bridge.
 
 One process is elected as the **bridge leader**. It owns the configured browser WebSocket port and the authenticated Savage Scraper connection. Additional Savage MCP processes act as **proxies** over local OS IPC and forward browser/status requests to that leader. Requests from all participating processes are serialized by the leader before they reach Chrome, so multiple MCP clients do not compete for the single dedicated browser tab.
 
@@ -296,7 +296,7 @@ Savage Scraper owns exactly one dedicated MCP tab:
 
 - `savage_open` creates it if necessary.
 - Later `savage_open` calls navigate/reuse the same tab.
-- Concurrent `savage_open` / `savage_scrape` calls—including calls from multiple Savage MCP processes sharing the same config—are serialized by the shared bridge leader before they reach Chrome.
+- Concurrent `savage_open` / `savage_scrape` calls-including calls from multiple Savage MCP processes sharing the same config-are serialized by the shared bridge leader before they reach Chrome.
 - Savage Scraper also serializes browser operations on the extension side as a second correctness boundary around the shared tab.
 - The user's previously active Chrome tab is restored after the operation when possible.
 - By default (`close_after_scrape: false`), the MCP tab closes after the configured inactivity timeout.
